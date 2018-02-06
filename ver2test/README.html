@@ -1,0 +1,77 @@
+<html lang="ja"><head>
+ <meta charset="UTF-8" />
+ <title>README.md</title>
+</head><body>
+<h1>プログラミング言語「TSF_Tab-Separated-Forth」開発準備(ver3草案)。</h1>
+<h2>TSF超ザックリ説明。</h2>
+<p>
+TSFはForth風インタプリタです。構文は文字列をタブで区切るだけ(コメント行と関数カードでシバン「#!」を用いる程度)。<br />
+名前の由来はCSV→TSV→TSF。<br />
+<a href="https://github.com/ooblog/TSF2KEV/blob/master/docs/TSF_512x384.png"><img src="https://github.com/ooblog/TSF2KEV/raw/master/docs/TSF_512x384.png" alt="TSF syntax image" title="TSF2KEV/TSF_512x384.png at master ooblog/TSF2KEV" width="512" height="384"></a><br />
+ver3開発前につき上記画像はver2「<a href="https://ooblog.github.io/TSF2KEV/" title="「TSF2KEV」はプログラミング言語「TSF_Tab-Separated-Forth」のD言語とPythonによる実装です。">TSF2KEV(https://ooblog.github.io/TSF2KEV/)</a>」のものになります。<br />
+</p>
+<h2>既存のFORTHおよびその他のプログラミング言語と違う所。</h2>
+<p>
+関数の事をワードではなくカードと呼びます。カードの束をスタックと呼びます。スタックの集まりをデッキと呼びます。<br />
+TSF構文と数式(電卓)を分離してます。それにより電卓カード「#!TSF_Calc」に渡す数式内では括弧が使えるので中置記法(分数)とRPN(小数)を使い分けできます。<br />
+逆にTSF構文からは括弧を除外しています。なのでIF文やFOR文が存在しません。IF文は電卓内の条件演算子を用い、FOR文は再帰を用います。<br />
+</p>
+<h2>言語が生まれた経緯。</h2>
+<p>
+漢直(漢字直接入力)の漢字配列やkan5x5フォントのグリフエディタの単漢字辞書など漢字データ管理でTSV(LTSVを更にアレンジしたL:Tsv)を用いてました(「<a href="https://github.com/ooblog/LTsv10kanedit" title="ooblog/LTsv10kanedit: 「L:Tsv」の読み書きを中心としたモジュール群と漢字入力「kanedit」のPythonによる実装です(準備中)。">LTsv10kanedit</a>」を参考)。<br />
+実装を<a href="http://hsp.tv/" title="HSPTV!（HSP( Hot Soup Processor )ソフトウェアの配布）">HSP</a>→<a href="http://www.basic-converter.org/" title="BaCon - BASIC to C converter">BaCon</a>→<a href="https://www.python.org/" title="Welcome to Python.org">Python</a>で何度か作り直す紆余曲折を経て今度は<a href="https://dlang.org/" title="Home - D Programming Language">D言語</a>で作り直す流れでしたが、言語の変更が強いられる度に一から作り直すのはしんどい。<br />
+なので、TSVにデータ(プログラム含む)を入力するだけで動作するスクリプトが欲しくなったので開発中です。<br />
+当面の目標は「<a href="https://github.com/ooblog/KIV" title="漢字直接入力＆漢字直接検索Vimプラグイン「KanjiInputVim」(準備中)。 ">KanjiInputVim</a>」のような漢直をVimスクリプトの力を借りずに使わずに「TSF」だけで動かす事。<br />
+</p>
+<h2>文法の見直し(3ver文法)。よりシンプルな構文を目指す。</h2>
+<p>
+☐「#!」で始まる行(スタック)はコメント。「#!TSF_」で始まるカードは関数予約。<br />
+☐関数カード名に直接THisTHatTHeTHeyを埋め込んでたのを廃止。「#!TSF_This」「#!TSF_That」関数カードが返り値すればよい。<br />
+　(#!TSF_theyは0文字列を返す。0文字列カードはスタック名一覧)。<br />
+☐関数カードの末尾「C」はThatカード1枚処理、末尾「N」はThatカードN枚処理、末尾「L」はThatカードL回処理、末尾「S」はTheスタック処理。<br />
+☐スタック表示指定「#!TSF_StyleC」のOTNstyleの代わりに数値指定。0の時はOneLiner。マイナスの時は右から読む縦書きに変換。<br />
+☐KanEditVimのためにL:Tsvとの互換性(ラベル指定も対応)維持。<br />
+</p>
+<h2>電卓の見直し(3ver文法)。符号必須化。</h2>
+<p>
+☐「#!TSF_Calc」と「#!TSF_RPN」の統合(既にver2の時点で分数計算か小数計算かはコンマの有無で判定)。小数計算時でもinfを「pN」と表示。<br />
+☐数列和「M」などの部分で[スタック名]を指定する事で数列も扱いたい。<br />
+☐数式の構文解析高速化のためpmzの符号を必須。これにより「p(m1)→pm1z→p1」の様に絶対値の式が符号処理に吸収できる。<br />
+☐絶対値は正の符号ではないので、「m2+z3」はp1ではなく「m5」になる。符号は左辺に影響を受ける。絶対値に加減算等しても絶対値のまま。<br />
+☐無限大にも符号を搭載(pn|0,mn|0)。これによりmn|0でスタックの先頭、pn|0でスタックの末尾といった指定を可能に。<br />
+☐0にも符号(マイナスゼロm0の導入)。これによりスタック逆順がm1からではなくm0からにできる。<br />
+☐p0/p0およびpn/pnその他pn-pnなど計算不能な場合は絶対値の無限「zn」と表現。<br />
+☐漢数字や符号の+-変換などは別途「#!TSF_Format」を用いる予定。<br />
+☑日時を分母86400秒の分数で扱う事により電卓に統合したい(RPNで暫定的にUNIX時間に対応ただし浮動小数有効桁数の関係で「日u」「時t」が同時に扱えない)。<br />
+☐単純な文字列連結も電卓に統合したい(複雑な文字列処理は正規表現を用いる)。<br />
+</p>
+<h2>コールスタックの見直し(3ver文法)。ループの簡易化。</h2>
+<p>
+☐「#!TSF_CallN」「#!TSF_CallS」を追加予定。コールスタックはスタック名一覧に加え「回数」も保持させる。<br />
+</p>
+<h2>その他TSF2KEVから引きずってる未解決な箇所など。</h2>
+<p>
+☑漢直Vimプラグイン「KanEditVim」が「<a href="https://github.com/ooblog/KIV" title="漢字直接入力＆漢字直接検索Vimプラグイン「KanjiInputVim」(準備中)。 ">KanjiInputVim</a>」に名称変更したりしたのでリポジトリ名から「KEV」を外した。<br />
+☐「tan(θ*p90|z360)」を分母ゼロ「pn|0」と表記したいがとりあえず未着手。<br />
+☐字列の類似度(matcHer)がD言語で再現できるか未定なので当面後回しになるかも。<br />
+☐D言語で現在時刻(StopWatchではなく「現在時刻」)のミリ秒以下を取得する方法が不明なので「@ls」「@rs」系がとりあえず0を返す。<br />
+</p>
+<h2>開発環境対応言語について(開発環境はXenialPup7.5に変更予定なのでPython2系の互換は無くなるかも)。</h2>
+<p>
+☑Tahrpup6.0.5,Wine1.7.18共にdmd2.077.1で開発。<br />
+☐D言語以外のプログラム言語はTSFで作ったテンプレートを元にジェネレータで変換する予定。<br />
+☐PythonやVimのバージョンはXenialPupに移行するまで未定(Tahrpup6.0.5ではPython2.7.6,vim.gtk7.4.52)。<br />
+</p>
+<ul><li>Tahrpup6.0.5(Puppy Linux)<ul><li><a href="http://puppylinux.com/" title="Puppy Linux Home">http://puppylinux.com/</a></li></ul></li></ul>
+<ul><li>Python 3.4.4<ul><li><a href="https://www.python.org/downloads/release/python-344/" title="Python Release Python 3.4.4 | Python.org">https://www.python.org/downloads/release/python-344/</a></li></ul></li></ul>
+<ul><li>DMD 2.074.0<ul><li><a href="https://dlang.org/download.html" title="Downloads - D Programming Language">https://dlang.org/download.html</a></li></ul></li></ul>
+<ul><li>vim-gtk(Ubuntu trusty)<ul><li><a href="https://packages.ubuntu.com/trusty/vim-gtk" title="Ubuntu – trusty の vim-gtk パッケージに関する詳細">https://packages.ubuntu.com/trusty/vim-gtk</a></li></ul></li></ul>
+<ul><li>Vim — KaoriYa<ul><li><a href="https://www.kaoriya.net/software/vim/" title="Vim — KaoriYa">https://www.kaoriya.net/software/vim/</a></li></ul></li></ul>
+<ul><li>Portable Wine(shinobar.server-on.net)<ul><li><a href="http://shinobar.server-on.net/puppy/opt/wine-portable-HELP_ja.html" title="Portable Wine">http://shinobar.server-on.net/puppy/opt/wine-portable-HELP_ja.html</a></li></ul></li></ul>
+
+<h2>ライセンス・著作権など。</h2>
+<p>
+&#35;! -- Copyright (c) 2017 ooblog --<br />
+&#35;! License: MIT　https://github.com/ooblog/TSF3/blob/master/LICENSE<br />
+</p>
+</body></html>
