@@ -136,10 +136,10 @@ venv.bak/
 
 ## TSF .gitignore
 
-# git clone github:ooblog/TSF3KEV.git
+# git clone github:ooblog/TSF3.git
 # git status
-# git push github:ooblog/TSF3KEV.git master
-# git push github:ooblog/TSF3KEV.git 20180206T205338
+# git push github:ooblog/TSF3.git master
+# git push github:ooblog/TSF3.git 20180206T205338
 # git log
 # git ls-files
 # git commit -a -m ""
