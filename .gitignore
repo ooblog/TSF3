@@ -135,7 +135,7 @@ venv.bak/
 
 
 ## TSF .gitignore
-
+# git clone -b master --single-branch github:ooblog/TSF3.git
 # git clone github:ooblog/TSF3.git
 # git status
 # git push github:ooblog/TSF3.git master
